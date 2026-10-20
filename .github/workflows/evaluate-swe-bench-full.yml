@@ -1,0 +1,33 @@
+name: Evaluate ATROPOS on Full SWE-bench
+on: 
+  push: 
+    paths: ['predictions/swe-bench-full/**']
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      
+      - name: Install Open-Source SWE-bench
+        run: pip install git+https://github.com/princeton-nlp/SWE-bench.git
+        
+      - name: Format Predictions to JSONL
+        run: |
+          python -c "import os, json; predictions = [{'instance_id': p.replace('.patch', ''), 'model_patch': open(f'predictions/swe-bench-full/{p}').read(), 'model_name_or_path': 'ATROPOS'} for p in os.listdir('predictions/swe-bench-full') if p.endswith('.patch')]; open('atropos_full_swe_predictions.jsonl', 'w').writelines(json.dumps(p) + '\n' for p in predictions)"
+          
+      - name: Run SWE-bench Docker Harness
+        run: |
+          python -m swebench.harness.run_evaluation \
+            --dataset_name princeton-nlp/SWE-bench \
+            --predictions_path atropos_full_swe_predictions.jsonl \
+            --max_workers 4 \
+            --run_id ATROPOS-SWE-FULL-01
+            
+      - name: Upload Evaluation Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with: 
+          name: atropos-swe-bench-results
+          path: logs/evaluation/ATROPOS-SWE-FULL-01/
