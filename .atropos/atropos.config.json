@@ -1,0 +1,12 @@
+{"discovered_models": {
+  "deepseek": "deepseek-flash",
+  "gemini": "gemini-2.5-flash",
+  "openai": "gpt-5.1-codex",
+  "deepseek_direct": "deepseek-flash",
+  "sambanova": "Meta-Llama-3.3-70B-Instruct",
+  "cerebras": "gpt-oss-120b",
+  "openrouter": "qwen/qwen-2.5-coder-32b-instruct",
+  "groq": "openai/gpt-oss-20b",
+  "nvidia": "meta/codellama-70b",
+  "mistral": "codestral-2508"
+}}

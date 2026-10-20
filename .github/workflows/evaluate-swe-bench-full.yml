@@ -1,15 +1,40 @@
 name: Evaluate ATROPOS on Full SWE-bench
 on: 
-  push: 
-    paths: ['predictions/swe-bench-full/**']
+  workflow_dispatch:
+  push:
+    paths: ['start-batch.txt']
+
 jobs:
-  evaluate:
+  generate-and-evaluate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.11' }
-      
+      - name: Checkout Evals Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with: 
+          python-version: '3.11'
+          
+      - name: Install Generation Dependencies
+        run: pip install requests
+
+      - name: Download ATROPOS Engine
+        env: ${{ toJson(secrets) }}
+        run: |
+          # Uses your injected tokens to download the JAR from your main repo
+          gh release download latest -R mjmichaelware/ATROPOS -p "ATROPOS.jar"
+
+      - name: Run Autonomous Generation Pipeline
+        env: ${{ toJson(secrets) }}
+        run: python run_swe_bench_batch.py
+
       - name: Install Open-Source SWE-bench
         run: pip install git+https://github.com/princeton-nlp/SWE-bench.git
         
