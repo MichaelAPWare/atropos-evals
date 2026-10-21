@@ -25,14 +25,19 @@ jobs:
       - name: Install Generation Dependencies
         run: pip install requests
 
+      - name: Inject All Secrets into Environment
+        env:
+          SECRETS_JSON: ${{ toJson(secrets) }}
+        run: echo "$SECRETS_JSON" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"' >> $GITHUB_ENV
+
       - name: Download ATROPOS Engine
-        env: ${{ toJson(secrets) }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Uses your injected tokens to download the JAR from your main repo
           gh release download latest -R mjmichaelware/ATROPOS -p "ATROPOS.jar"
 
       - name: Run Autonomous Generation Pipeline
-        env: ${{ toJson(secrets) }}
         run: python run_swe_bench_batch.py
 
       - name: Install Open-Source SWE-bench
